@@ -1,15 +1,15 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  VideoArchiver 
+  VideoArchiver
 
   Powertools for AWS Lambda (Python) example
 
 Globals: # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy-globals.html
   Function:
-    Timeout: 5
+    Timeout: 40
     MemorySize: 128
-    Runtime: python3.10
+    Runtime: python3.8
 
     Tracing: Active
   Api:
@@ -24,13 +24,6 @@ Resources:
       Architectures:
       - x86_64
       Tracing: Active
-      Events:
-        HelloPath:
-          Type: Api           # More info about API Event Source: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-api.html
-          Properties:
-            Path: /hello
-            Method: GET
-             # Powertools for AWS Lambda (Python) env vars: https://awslabs.github.io/aws-lambda-powertools-python/#environment-variables
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: PowertoolsHelloWorld
@@ -39,24 +32,7 @@ Resources:
       Tags:
         LambdaPowertools: python
 
-  ApplicationResourceGroup:
-    Type: AWS::ResourceGroups::Group
-    Properties:
-      Name:
-        Fn::Sub: ApplicationInsights-SAM-${AWS::StackName}
-      ResourceQuery:
-        Type: CLOUDFORMATION_STACK_1_0
-  ApplicationInsightsMonitoring:
-    Type: AWS::ApplicationInsights::Application
-    Properties:
-      ResourceGroupName:
-        Ref: ApplicationResourceGroup
-      AutoConfigurationEnabled: 'true'
 Outputs:
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod environment for Hello World Function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello"
-
   HelloWorldFunction:
     Description: Hello World Lambda Function ARN
     Value: !GetAtt HelloWorldFunction.Arn
