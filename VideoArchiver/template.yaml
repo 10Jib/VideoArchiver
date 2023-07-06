@@ -5,6 +5,12 @@ Description: >
 
   Powertools for AWS Lambda (Python) example
 
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  PrivateSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+
 Globals: # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy-globals.html
   Function:
     Timeout: 40
@@ -15,6 +21,17 @@ Globals: # https://docs.aws.amazon.com/serverless-application-model/latest/devel
   Api:
     TracingEnabled: true
 Resources:
+  ECSSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: >-
+        ECS Security Group
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: '-1'
+      VpcId: !Ref VpcId
+
   PollSourcesFunction:
     Type: AWS::Serverless::Function     # More info about Function Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
     Properties:
@@ -34,7 +51,57 @@ Resources:
   MainStateMachine:
     Type: AWS::Serverless::StateMachine
     Properties:
-      DefinitionUri: stepfunction/ignore.asl
+      Type: STANDARD
+      DefinitionUri: stepfunction/main.asl
+      DefinitionSubstitutions:
+        SplashTaskDef: #Still working on this part
+        TaskSubnets: !Ref PrivateSubnetIds
+        TaskSecurityGroup: !Ref ECSSecurityGroup
+        LambdaArn: !Ref PollSourcesFunction
+
+  AsyncSFnRole:
+    Type: AWS::IAM::Role
+    Properties:
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com
+      Path: /
+      Policies:
+        - PolicyName: APIGWConnectionsAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "execute-api:ManageConnections"
+                Resource:
+                  - !Sub "*"
+
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                  - logs:CreateLogStream
+                  - logs:PutLogEvent
+                Resource: 
+                  - "*"
+
+      ManagedPolicyArns:
+        - arn:aws:iam::235620572299:policy/service-role/LambdaInvokeScopedAccessPolicy-6fd28ea0-e360-406f-950d-33599e60e472
+        - arn:aws:iam::235620572299:policy/IAMPassALL
+        - arn:aws:iam::235620572299:policy/service-role/XRayAccessPolicy-2e56b0a9-8d4a-4589-ac44-6788363d28a4
+        - arn:aws:iam::235620572299:policy/service-role/EcsTaskManagementScopedAccessPolicy-911f1885-0626-4088-b3c5-3e0c7e013ea1
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
 
 
 Outputs:

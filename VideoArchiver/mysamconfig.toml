@@ -1,0 +1,10 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "VideoArchiver"
+resolve_s3 = true
+s3_prefix = "VideoArchiver"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "VpcId=\"vpc-001887188f8940a42\" PrivateSubnetIds=\"subnet-034129d9c45078db7\""
+image_repositories = []

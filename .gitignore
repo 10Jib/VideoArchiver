@@ -1,4 +1,4 @@
 /TestingRAM/*
-VideoArhiver/.aws-sam/*
-VideoArhiver/stepfunction/*
+/VideoArchiver/.aws-sam
 deployment.zip
+/VideoArhiver/mysamconfig.toml
