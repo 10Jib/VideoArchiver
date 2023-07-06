@@ -15,12 +15,12 @@ Globals: # https://docs.aws.amazon.com/serverless-application-model/latest/devel
   Api:
     TracingEnabled: true
 Resources:
-  HelloWorldFunction:
+  PollSourcesFunction:
     Type: AWS::Serverless::Function     # More info about Function Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
     Properties:
       Handler: app.lambda_handler
-      CodeUri: hello_world
-      Description: Hello World function
+      CodeUri: lambda
+      Description: Function to poll video sources using container task, and download them.
       Architectures:
       - x86_64
       Tracing: Active
@@ -31,9 +31,14 @@ Resources:
           LOG_LEVEL: INFO
       Tags:
         LambdaPowertools: python
+  MainStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionUri: stepfunction/ignore.asl
+
 
 Outputs:
-  HelloWorldFunction:
+  PollSourcesFunction:
     Description: Hello World Lambda Function ARN
-    Value: !GetAtt HelloWorldFunction.Arn
+    Value: !GetAtt PollSourcesFunction.Arn
 

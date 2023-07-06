@@ -1,1 +1,4 @@
 /TestingRAM/*
+VideoArhiver/.aws-sam/*
+VideoArhiver/stepfunction/*
+deployment.zip
